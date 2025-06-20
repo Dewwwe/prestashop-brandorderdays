@@ -17,11 +17,85 @@
 * versions in the future. If you wish to customize PrestaShop for your
 * needs please refer to http://www.prestashop.com for more information.
 *
-*  @author    PrestaShop SA <contact@prestashop.com>
-*  @copyright 2007-2025 PrestaShop SA
-*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
+* @author PrestaShop SA <contact@prestashop.com>
+* @copyright 2007-2025 PrestaShop SA
+* @license http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
+* International Registered Trademark & Property of PrestaShop SA
 *
 * Don't forget to prefix your containers with your own identifier
 * to avoid any conflicts with others containers.
 */
+
+/* Table styling */
+.table-responsive {
+  overflow-x: auto;
+  max-height: 70vh; /* Limit height to enable scrolling */
+  position: relative; /* Important for sticky header */
+}
+
+.table {
+  position: relative;
+  margin-bottom: 0;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  text-align: center;
+  vertical-align: middle !important;
+  padding: 10px 8px;
+}
+
+.table td {
+  vertical-align: middle !important;
+  padding: 10px 8px;
+}
+
+.table td.text-center, 
+.table th.text-center {
+  text-align: center;
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0 auto;
+}
+
+/* Form styling */
+.form-group {
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.help-block {
+  font-style: italic;
+  color: #959595;
+}
+
+/* Filter toggle styling */
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.filter-toggle label {
+  margin-right: 10px;
+  margin-bottom: 0;
+  font-weight: normal;
+}
+
+/* Custom switch styling */
+.switch-container {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.prestashop-switch {
+  margin-bottom: 0;
+}

@@ -25,3 +25,35 @@
 * Don't forget to prefix your containers with your own identifier
 * to avoid any conflicts with others containers.
 */
+
+/* Product restriction alert */
+.product-restriction-alert {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.product-restriction-alert i {
+    margin-right: 10px;
+}
+
+/* Cart restrictions */
+.cart-restrictions {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.restricted-products-list {
+    margin-top: 10px;
+    margin-bottom: 15px;
+    padding-left: 20px;
+}
+
+.restricted-products-list li {
+    margin-bottom: 5px;
+}
+
+.cart-action-buttons {
+    margin-top: 15px;
+}

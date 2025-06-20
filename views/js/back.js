@@ -25,3 +25,18 @@
 * Don't forget to prefix your containers with your own identifier
 * to avoid any conflicts with others containers.
 */
+
+/**
+ * Brand Order Days module back office JavaScript
+ */
+$(document).ready(function() {
+  // Fix for sticky header in some browsers
+  $('.table-responsive').on('scroll', function() {
+    var scrollTop = $(this).scrollTop();
+    if (scrollTop > 0) {
+      $(this).addClass('is-scrolling');
+    } else {
+      $(this).removeClass('is-scrolling');
+    }
+  });
+});

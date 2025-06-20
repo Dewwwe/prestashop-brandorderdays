@@ -1,28 +1,28 @@
 <?php
 /**
-* 2007-2025 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author    PrestaShop SA <contact@prestashop.com>
-*  @copyright 2007-2025 PrestaShop SA
-*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
+ * 2007-2025 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author    PrestaShop SA <contact@prestashop.com>
+ *  @copyright 2007-2025 PrestaShop SA
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -62,17 +62,64 @@ class Brandorderdays extends Module
         Configuration::updateValue('BRANDORDERDAYS_LIVE_MODE', false);
 
         return parent::install() &&
-            $this->registerHook('header') &&
+            $this->registerHook('displayHeader') &&
             $this->registerHook('displayBackOfficeHeader') &&
-            $this->registerHook('actionCartSave') &&
-            $this->registerHook('displayProductExtraContent');
+            $this->registerHook('actionProductListOverride') &&
+            $this->registerHook('displayProductAdditionalInfo') &&
+            $this->registerHook('actionCartUpdateQuantityBefore') &&
+            $this->registerHook('displayShoppingCart') &&
+            $this->registerHook('actionValidateOrder') &&
+            $this->saveModuleConfig($this->getDefaultConfig());
     }
 
     public function uninstall()
     {
         Configuration::deleteByName('BRANDORDERDAYS_LIVE_MODE');
+        Configuration::deleteByName('BRANDORDERDAYS_CONFIG');
 
         return parent::uninstall();
+    }
+
+    /**
+     * Use new translation system
+     */
+    public function isUsingNewTranslationSystem()
+    {
+        return true;
+    }
+
+    /**
+     * Default configuration values
+     */
+    private function getDefaultConfig()
+    {
+        return [
+            'timezone' => 'Europe/Paris',
+            'global_message' => $this->trans('Some products are only available on specific days of the week.', [], 'Modules.Brandorderdays.Shop'),
+            'brands' => [] // Empty by default, meaning no restrictions
+        ];
+    }
+
+    /**
+     * Get the module configuration
+     */
+    public function getModuleConfig()
+    {
+        $config = json_decode(Configuration::get('BRANDORDERDAYS_CONFIG'), true);
+
+        if (!$config) {
+            $config = $this->getDefaultConfig();
+        }
+
+        return $config;
+    }
+
+    /**
+     * Save the module configuration
+     */
+    public function saveModuleConfig($config)
+    {
+        return Configuration::updateValue('BRANDORDERDAYS_CONFIG', json_encode($config));
     }
 
     /**
@@ -80,98 +127,112 @@ class Brandorderdays extends Module
      */
     public function getContent()
     {
-        /**
-         * If values have been submitted in the form, process.
-         */
-        if (((bool)Tools::isSubmit('submitBrandorderdaysModule')) == true) {
-            $this->postProcess();
+        $output = '';
+
+        if ((bool) Tools::isSubmit('submitBrandorderdaysModule')) {
+            $output .= $this->postProcess();
         }
 
-        $this->context->smarty->assign('module_dir', $this->_path);
+        // Prepare data for the configuration form
+        $config = $this->getModuleConfig();
 
-        $output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
+        // Get all brands (manufacturers)
+        $brands = Manufacturer::getManufacturers();
 
-        return $output.$this->renderForm();
+        $days_of_week = [
+            'monday' => $this->trans('Monday', [], 'Modules.Brandorderdays.Admin'),
+            'tuesday' => $this->trans('Tuesday', [], 'Modules.Brandorderdays.Admin'),
+            'wednesday' => $this->trans('Wednesday', [], 'Modules.Brandorderdays.Admin'),
+            'thursday' => $this->trans('Thursday', [], 'Modules.Brandorderdays.Admin'),
+            'friday' => $this->trans('Friday', [], 'Modules.Brandorderdays.Admin'),
+            'saturday' => $this->trans('Saturday', [], 'Modules.Brandorderdays.Admin'),
+            'sunday' => $this->trans('Sunday', [], 'Modules.Brandorderdays.Admin')
+        ];
+
+        // Get all timezones
+        $timezones = [];
+        foreach (DateTimeZone::listIdentifiers() as $timezone) {
+            $timezones[] = [
+                'id' => $timezone,
+                'name' => $timezone
+            ];
+        }
+
+        // Check if we should filter to show only configured brands
+        $show_only_configured = (bool) Tools::getValue('show_only_configured', false);
+
+        // Filter brands if needed
+        $filtered_brands = [];
+        foreach ($brands as $brand) {
+            $id_brand = $brand['id_manufacturer'];
+            if (!$show_only_configured || isset($config['brands'][$id_brand])) {
+                $filtered_brands[] = $brand;
+            }
+        }
+
+        $this->context->smarty->assign([
+            'module_dir' => $this->_path,
+            'brands' => $filtered_brands,
+            'days_of_week' => $days_of_week,
+            'timezones' => $timezones,
+            'config' => $config,
+            'BRANDORDERDAYS_LIVE_MODE' => Configuration::get('BRANDORDERDAYS_LIVE_MODE', false),
+            'show_only_configured' => $show_only_configured,
+            'current_url' => $this->context->link->getAdminLink('AdminModules') . '&configure=' . $this->name
+        ]);
+
+        $output .= $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
+
+        return $output;
     }
 
     /**
-     * Create the form that will be displayed in the configuration of your module.
+     * Save form data.
      */
-    protected function renderForm()
+    protected function postProcess()
     {
-        $helper = new HelperForm();
+        // Process the standard configuration values
+        $form_values = $this->getConfigFormValues();
+        foreach (array_keys($form_values) as $key) {
+            Configuration::updateValue($key, Tools::getValue($key));
+        }
 
-        $helper->show_toolbar = false;
-        $helper->table = $this->table;
-        $helper->module = $this;
-        $helper->default_form_language = $this->context->language->id;
-        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG', 0);
-
-        $helper->identifier = $this->identifier;
-        $helper->submit_action = 'submitBrandorderdaysModule';
-        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false)
-            .'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
-        $helper->token = Tools::getAdminTokenLite('AdminModules');
-
-        $helper->tpl_vars = array(
-            'fields_value' => $this->getConfigFormValues(), /* Add values for your inputs */
-            'languages' => $this->context->controller->getLanguages(),
-            'id_language' => $this->context->language->id,
-        );
-
-        return $helper->generateForm(array($this->getConfigForm()));
+        // Process the brand restrictions configuration
+        return $this->processConfigForm();
     }
 
     /**
-     * Create the structure of your form.
+     * Process the configuration form for brand restrictions
      */
-    protected function getConfigForm()
+    protected function processConfigForm()
     {
-        return array(
-            'form' => array(
-                'legend' => array(
-                'title' => $this->l('Settings'),
-                'icon' => 'icon-cogs',
-                ),
-                'input' => array(
-                    array(
-                        'type' => 'switch',
-                        'label' => $this->l('Live mode'),
-                        'name' => 'BRANDORDERDAYS_LIVE_MODE',
-                        'is_bool' => true,
-                        'desc' => $this->l('Use this module in live mode'),
-                        'values' => array(
-                            array(
-                                'id' => 'active_on',
-                                'value' => true,
-                                'label' => $this->l('Enabled')
-                            ),
-                            array(
-                                'id' => 'active_off',
-                                'value' => false,
-                                'label' => $this->l('Disabled')
-                            )
-                        ),
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'text',
-                        'prefix' => '<i class="icon icon-envelope"></i>',
-                        'desc' => $this->l('Enter a valid email address'),
-                        'name' => 'BRANDORDERDAYS_ACCOUNT_EMAIL',
-                        'label' => $this->l('Email'),
-                    ),
-                    array(
-                        'type' => 'password',
-                        'name' => 'BRANDORDERDAYS_ACCOUNT_PASSWORD',
-                        'label' => $this->l('Password'),
-                    ),
-                ),
-                'submit' => array(
-                    'title' => $this->l('Save'),
-                ),
-            ),
-        );
+        $config = $this->getModuleConfig();
+
+        // Update general settings
+        $config['timezone'] = Tools::getValue('timezone');
+        $config['global_message'] = Tools::getValue('global_message');
+
+        // Process brand restrictions
+        $config['brands'] = [];
+        $brands = Manufacturer::getManufacturers();
+
+        foreach ($brands as $brand) {
+            $id_brand = $brand['id_manufacturer'];
+            $restricted_days = Tools::getValue('brand_' . $id_brand . '_days', []);
+
+            if (!empty($restricted_days)) {
+                $config['brands'][$id_brand] = [
+                    'restricted_days' => $restricted_days,
+                    'custom_message' => Tools::getValue('brand_' . $id_brand . '_message', '')
+                ];
+            }
+        }
+
+        if ($this->saveModuleConfig($config)) {
+            return $this->displayConfirmation($this->trans('Settings updated successfully.', [], 'Modules.Brandorderdays.Admin'));
+        } else {
+            return $this->displayError($this->trans('Error occurred during settings update.', [], 'Modules.Brandorderdays.Admin'));
+        }
     }
 
     /**
@@ -184,26 +245,15 @@ class Brandorderdays extends Module
         );
     }
 
+
     /**
-     * Save form data.
+     * Add the CSS & JavaScript files you want to be loaded in the BO.
      */
-    protected function postProcess()
-    {
-        $form_values = $this->getConfigFormValues();
-
-        foreach (array_keys($form_values) as $key) {
-            Configuration::updateValue($key, Tools::getValue($key));
-        }
-    }
-
-    /**
-    * Add the CSS & JavaScript files you want to be loaded in the BO.
-    */
     public function hookDisplayBackOfficeHeader()
     {
         if (Tools::getValue('configure') == $this->name) {
-            $this->context->controller->addJS($this->_path.'views/js/back.js');
-            $this->context->controller->addCSS($this->_path.'views/css/back.css');
+            $this->context->controller->addJS($this->_path . 'views/js/back.js');
+            $this->context->controller->addCSS($this->_path . 'views/css/back.css');
         }
     }
 
@@ -212,17 +262,204 @@ class Brandorderdays extends Module
      */
     public function hookHeader()
     {
-        $this->context->controller->addJS($this->_path.'/views/js/front.js');
-        $this->context->controller->addCSS($this->_path.'/views/css/front.css');
+        // Only load assets if the module is active
+        if (Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
+            $this->context->controller->addCSS($this->_path . '/views/css/front.css');
+            $this->context->controller->addJS($this->_path . '/views/js/front.js');
+        }
     }
 
-    public function hookActionCartSave()
+    /**
+     * Check if a product is restricted today
+     */
+    public function isProductRestrictedToday($id_product)
     {
-        /* Place your code here. */
+        // If the module is not active, no products are restricted
+        if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
+            return false;
+        }
+
+        static $restricted_products = null;
+
+        // Initialize the cache if needed
+        if ($restricted_products === null) {
+            $restricted_products = [];
+            $config = $this->getModuleConfig();
+
+            // Set timezone for date calculations
+            $previous_timezone = date_default_timezone_get();
+            date_default_timezone_set($config['timezone']);
+
+            // Get current day of week
+            $current_day = strtolower(date('l'));
+
+            // Get all brands with restrictions for today
+            $restricted_brands = [];
+            foreach ($config['brands'] as $id_brand => $brand_config) {
+                if (in_array($current_day, $brand_config['restricted_days'])) {
+                    $restricted_brands[] = (int) $id_brand;
+                }
+            }
+
+            // If we have restricted brands, get their products
+            if (!empty($restricted_brands)) {
+                $products = Db::getInstance()->executeS('
+                SELECT id_product 
+                FROM ' . _DB_PREFIX_ . 'product 
+                WHERE id_manufacturer IN (' . implode(',', $restricted_brands) . ')
+            ');
+
+                if ($products) {
+                    foreach ($products as $product) {
+                        $restricted_products[$product['id_product']] = true;
+                    }
+                }
+            }
+
+            // Restore original timezone
+            date_default_timezone_set($previous_timezone);
+        }
+
+        return isset($restricted_products[$id_product]);
     }
 
-    public function hookDisplayProductExtraContent()
+    /**
+     * Get restriction message for a product
+     */
+    public function getProductRestrictionMessage($id_product)
     {
-        /* Place your code here. */
+        $config = $this->getModuleConfig();
+        $product = new Product($id_product);
+        $id_brand = $product->id_manufacturer;
+
+        if (isset($config['brands'][$id_brand]['custom_message']) && !empty($config['brands'][$id_brand]['custom_message'])) {
+            return $config['brands'][$id_brand]['custom_message'];
+        }
+
+        return $config['global_message'];
     }
+
+    /**
+     * Get all restricted products in a cart
+     */
+    public function getRestrictedProductsInCart($cart)
+    {
+        $restricted_products = [];
+
+        foreach ($cart->getProducts() as $product) {
+            if ($this->isProductRestrictedToday($product['id_product'])) {
+                $restricted_products[] = $product;
+            }
+        }
+
+        return $restricted_products;
+    }
+
+    /**
+     * Hide add to cart button on product cards
+     */
+    public function hookActionProductListOverride(&$params)
+    {
+        // If the module is not active, don't modify anything
+        if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
+            return;
+        }
+
+        if (isset($params['products']) && is_array($params['products'])) {
+            foreach ($params['products'] as &$product) {
+                if ($this->isProductRestrictedToday($product['id_product'])) {
+                    $product['add_to_cart_url'] = false;
+                    $product['show_price'] = true;
+                    $product['restricted_day'] = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * Show restriction message on product page
+     */
+    public function hookDisplayProductAdditionalInfo($params)
+    {
+        // If the module is not active, don't show any messages
+        if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
+            return '';
+        }
+
+        $product = $params['product'];
+
+        if ($this->isProductRestrictedToday($product->id)) {
+            $this->context->smarty->assign([
+                'restriction_message' => $this->getProductRestrictionMessage($product->id)
+            ]);
+
+            return $this->display(__FILE__, 'views/templates/hook/product_restriction.tpl');
+        }
+
+        return '';
+    }
+
+    /**
+     * Prevent adding restricted products to cart
+     */
+    public function hookActionCartUpdateQuantityBefore($params)
+    {
+        // If the module is not active, don't restrict anything
+        if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
+            return;
+        }
+
+        if ($this->isProductRestrictedToday($params['product']->id)) {
+            $this->context->controller->errors[] = $this->trans('This product cannot be ordered today.', [], 'Modules.Brandorderdays.Shop') . ' ' .
+                $this->getProductRestrictionMessage($params['product']->id);
+
+            // Prevent adding to cart by throwing an exception
+            throw new PrestaShopException($this->trans('This product cannot be ordered today.', [], 'Modules.Brandorderdays.Shop'));
+        }
+    }
+
+    /**
+     * Show messages about unavailable products in cart
+     */
+    public function hookDisplayShoppingCart($params)
+    {
+        // If the module is not active, don't show any messages
+        if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
+            return '';
+        }
+
+        $cart = $params['cart'];
+        $restricted_products = $this->getRestrictedProductsInCart($cart);
+
+        if (!empty($restricted_products)) {
+            $this->context->smarty->assign([
+                'restricted_products' => $restricted_products,
+                'global_message' => $this->getModuleConfig()['global_message']
+            ]);
+
+            return $this->display(__FILE__, 'views/templates/hook/cart_restrictions.tpl');
+        }
+
+        return '';
+    }
+
+    /**
+     * Final validation before order completion
+     */
+    public function hookActionValidateOrder($params)
+    {
+        // If the module is not active, don't restrict anything
+        if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
+            return;
+        }
+
+        $cart = $params['cart'];
+        $restricted_products = $this->getRestrictedProductsInCart($cart);
+
+        if (!empty($restricted_products)) {
+            // Prevent order completion
+            throw new PrestaShopException($this->trans('Your cart contains products that cannot be ordered today.', [], 'Modules.Brandorderdays.Shop'));
+        }
+    }
+
 }
