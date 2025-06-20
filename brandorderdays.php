@@ -69,7 +69,9 @@ class Brandorderdays extends Module
             $this->registerHook('actionCartUpdateQuantityBefore') &&
             $this->registerHook('displayShoppingCart') &&
             $this->registerHook('actionValidateOrder') &&
-            $this->saveModuleConfig($this->getDefaultConfig());
+            $this->saveModuleConfig($this->getDefaultConfig())
+            // Install the quick access tab in the back office
+            && $this->installTab();
     }
 
     public function uninstall()
@@ -77,7 +79,50 @@ class Brandorderdays extends Module
         Configuration::deleteByName('BRANDORDERDAYS_LIVE_MODE');
         Configuration::deleteByName('BRANDORDERDAYS_CONFIG');
 
+        // Uninstall tab
+        $this->uninstallTab();
+
         return parent::uninstall();
+    }
+
+    /**
+     * Create admin tab for quick access
+     */
+    private function installTab()
+    {
+        $tab = new Tab();
+        $tab->active = 1;
+        $tab->class_name = 'AdminBrandOrderDays';
+        $tab->name = array();
+
+        foreach (Language::getLanguages(true) as $lang) {
+            $tab->name[$lang['id_lang']] = $this->trans('Brand Ordering Restrictions', [], 'Modules.Brandorderdays.Admin', $lang['locale']);
+        }
+
+        // Find the position of Brands & Suppliers tab
+        $id_parent = (int) Tab::getIdFromClassName('AdminCatalog');
+        // $id_brands_tab = (int) Tab::getIdFromClassName('AdminParentManufacturers');
+
+        $tab->id_parent = $id_parent;
+        $tab->module = $this->name;
+        $tab->position = Tab::getNewLastPosition($tab->id_parent);
+
+        return $tab->add();
+    }
+
+    /**
+     * Remove admin tab
+     */
+    private function uninstallTab()
+    {
+        $id_tab = (int) Tab::getIdFromClassName('AdminBrandOrderDays');
+
+        if ($id_tab) {
+            $tab = new Tab($id_tab);
+            return $tab->delete();
+        }
+
+        return true;
     }
 
     /**
@@ -123,16 +168,10 @@ class Brandorderdays extends Module
     }
 
     /**
-     * Load the configuration form
+     * Render the configuration form
      */
-    public function getContent()
+    public function renderConfigurationForm()
     {
-        $output = '';
-
-        if ((bool) Tools::isSubmit('submitBrandorderdaysModule')) {
-            $output .= $this->postProcess();
-        }
-
         // Prepare data for the configuration form
         $config = $this->getModuleConfig();
 
@@ -170,6 +209,14 @@ class Brandorderdays extends Module
             }
         }
 
+        // Determine the current URL based on context
+        $current_url = '';
+        if (Tools::getValue('controller') == 'AdminBrandOrderDays') {
+            $current_url = $this->context->link->getAdminLink('AdminBrandOrderDays');
+        } else {
+            $current_url = $this->context->link->getAdminLink('AdminModules') . '&configure=' . $this->name;
+        }
+
         $this->context->smarty->assign([
             'module_dir' => $this->_path,
             'brands' => $filtered_brands,
@@ -178,10 +225,43 @@ class Brandorderdays extends Module
             'config' => $config,
             'BRANDORDERDAYS_LIVE_MODE' => Configuration::get('BRANDORDERDAYS_LIVE_MODE', false),
             'show_only_configured' => $show_only_configured,
-            'current_url' => $this->context->link->getAdminLink('AdminModules') . '&configure=' . $this->name
+            'current_url' => $current_url
         ]);
 
-        $output .= $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
+        return $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
+    }
+
+    /**
+     * Process the configuration form
+     */
+    public function processConfigurationForm()
+    {
+        $output = '';
+
+        // Process the standard configuration values
+        $form_values = $this->getConfigFormValues();
+        foreach (array_keys($form_values) as $key) {
+            Configuration::updateValue($key, Tools::getValue($key));
+        }
+
+        // Process the brand restrictions configuration
+        $result = $this->processConfigForm();
+
+        return $result;
+    }
+
+    /**
+     * Load the configuration form
+     */
+    public function getContent()
+    {
+        $output = '';
+
+        if ((bool) Tools::isSubmit('submitBrandorderdaysModule')) {
+            $output .= $this->processConfigurationForm();
+        }
+
+        $output .= $this->renderConfigurationForm();
 
         return $output;
     }
