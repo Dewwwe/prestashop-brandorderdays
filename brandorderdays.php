@@ -61,15 +61,18 @@ class Brandorderdays extends Module
     {
         Configuration::updateValue('BRANDORDERDAYS_LIVE_MODE', false);
 
-        return parent::install() &&
-            $this->registerHook('displayHeader') &&
-            $this->registerHook('displayBackOfficeHeader') &&
-            $this->registerHook('actionProductListOverride') &&
-            $this->registerHook('displayProductAdditionalInfo') &&
-            $this->registerHook('actionCartUpdateQuantityBefore') &&
-            $this->registerHook('displayShoppingCart') &&
-            $this->registerHook('actionValidateOrder') &&
-            $this->saveModuleConfig($this->getDefaultConfig())
+        return parent::install()
+            && $this->registerHook('displayHeader')
+            && $this->registerHook('displayTop')
+            && $this->registerHook('displayWrapperTop')
+            && $this->registerHook('displayBackOfficeHeader')
+            && $this->registerHook('actionPresentProductListing')
+            && $this->registerHook('displayProductAdditionalInfo')
+            && $this->registerHook('displayProductListReviews')
+            && $this->registerHook('actionCartUpdateQuantityBefore')
+            && $this->registerHook('displayShoppingCart')
+            && $this->registerHook('actionValidateOrder')
+            && $this->saveModuleConfig($this->getDefaultConfig())
             // Install the quick access tab in the back office
             && $this->installTab();
     }
@@ -436,24 +439,60 @@ class Brandorderdays extends Module
     }
 
     /**
-     * Hide add to cart button on product cards
+     * Modify product data for listings
      */
-    public function hookActionProductListOverride(&$params)
+    public function hookActionPresentProductListing(array $params)
     {
         // If the module is not active, don't modify anything
         if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
             return;
         }
 
-        if (isset($params['products']) && is_array($params['products'])) {
-            foreach ($params['products'] as &$product) {
-                if ($this->isProductRestrictedToday($product['id_product'])) {
-                    $product['add_to_cart_url'] = false;
-                    $product['show_price'] = true;
-                    $product['restricted_day'] = true;
-                }
-            }
+        $presentedProduct = &$params['presentedProduct'];
+
+        // Access the product data directly
+        $id_product = $presentedProduct['id_product'];
+
+        if ($this->isProductRestrictedToday($id_product)) {
+            // dump('presented product restricted: ');
+            // dump($presentedProduct);
+
+            // Instead of modifying add_to_cart_url directly, we'll add our own flag
+            $presentedProduct['restricted_day'] = true;
+            $presentedProduct['restriction_message'] = $this->getProductRestrictionMessage($id_product);
+            // Disable add to cart button by removing the url to up the product quantity
+            $presentedProduct['up_quantity_url'] = false;
+
+            // dump($presentedProduct);
         }
+    }
+
+    /**
+     * Display restriction message in product list
+     */
+    public function hookDisplayProductListReviews($params)
+    {
+        // If the module is not active, don't show any messages
+        if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
+            return '';
+        }
+
+
+        $product = $params['product'];
+
+        // dump('this is a product');
+
+        if (isset($product['restricted_day']) && $product['restricted_day']) {
+            $this->context->smarty->assign([
+                'product' => $product
+            ]);
+
+            // dump('this product is restricted'); 
+
+            return $this->display(__FILE__, 'views/templates/hook/product_list_override.tpl');
+        }
+
+        return '';
     }
 
     /**
@@ -540,6 +579,77 @@ class Brandorderdays extends Module
             // Prevent order completion
             throw new PrestaShopException($this->trans('Your cart contains products that cannot be ordered today.', [], 'Modules.Brandorderdays.Shop'));
         }
+    }
+
+    /**
+     * Display a banner when restricted products are on the page
+     */
+    public function hookDisplayTop($params)
+    {
+        return $this->getBanner($params);
+    }
+    public function hookDisplayWrapperTop($params)
+    {
+        return $this->getBanner($params);
+    }
+
+    protected function getBanner($params) {
+        // If the module is not active, don't show any banner
+        if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
+            return '';
+        }
+
+        $config = $this->getModuleConfig();
+
+        // Check if we're on a page that might display products
+        $controller = $this->context->controller->php_self;
+        $product_controllers = ['category', 'product', 'search', 'manufacturer', 'supplier', 'index'];
+
+        if (!in_array($controller, $product_controllers)) {
+            return '';
+        }
+
+        // For product page, check if the current product is restricted
+        if ($controller === 'product') {
+            $id_product = (int) Tools::getValue('id_product');
+            if ($id_product && $this->isProductRestrictedToday($id_product)) {
+                $this->context->smarty->assign([
+                    'restriction_message' => $config['global_message']
+                ]);
+                return $this->display(__FILE__, 'views/templates/hook/restriction_banner.tpl');
+            }
+            return '';
+        }
+
+        // For other pages, check if there are any restricted products from active brands
+
+        // Set timezone for date calculations
+        $previous_timezone = date_default_timezone_get();
+        date_default_timezone_set($config['timezone']);
+
+        // Get current day of week
+        $current_day = strtolower(date('l'));
+
+        // Get all brands with restrictions for today
+        $restricted_brands = [];
+        foreach ($config['brands'] as $id_brand => $brand_config) {
+            if (in_array($current_day, $brand_config['restricted_days'])) {
+                $restricted_brands[] = (int) $id_brand;
+            }
+        }
+
+        // Restore original timezone
+        date_default_timezone_set($previous_timezone);
+
+        // If we have restricted brands, show the banner
+        if (!empty($restricted_brands)) {
+            $this->context->smarty->assign([
+                'restriction_message' => $config['global_message']
+            ]);
+            return $this->display(__FILE__, 'views/templates/hook/restriction_banner.tpl');
+        }
+
+        return '';
     }
 
 }

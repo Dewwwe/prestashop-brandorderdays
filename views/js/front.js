@@ -25,3 +25,15 @@
 * Don't forget to prefix your containers with your own identifier
 * to avoid any conflicts with others containers.
 */
+
+$(document).ready(function() {
+    // Add disabled class to add-to-cart buttons for restricted products
+    $('.product-miniature.restricted-day .add-to-cart').addClass('disabled');
+    
+    // Prevent click on restricted products' add-to-cart buttons
+    $(document).on('click', '.product-miniature.restricted-day .add-to-cart', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
+});

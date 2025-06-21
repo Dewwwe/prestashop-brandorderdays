@@ -26,6 +26,11 @@
 * to avoid any conflicts with others containers.
 */
 
+/* Disable cart icon on restricted products */
+article.product-miniature :has(.disable-cart) button {
+    opacity: 0.5;
+}
+
 /* Product restriction alert */
 .product-restriction-alert {
     margin-top: 15px;
@@ -56,4 +61,58 @@
 
 .cart-action-buttons {
     margin-top: 15px;
+}
+
+
+/* Styling for restricted products */
+.product-miniature.restricted-day .add-to-cart {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    background-color: #f8f8f8 !important;
+    border-color: #ddd !important;
+    color: #999 !important;
+}
+
+.product-miniature.restricted-day .add-to-cart i {
+    opacity: 0.5;
+}
+
+/* Styling for restriction message */
+.product-restriction-message {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    color: #721c24;
+}
+
+/* For product page */
+.product-add-to-cart.restricted-day .add-to-cart {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    background-color: #f8f8f8 !important;
+    border-color: #ddd !important;
+    color: #999 !important;
+}
+
+/* Banner css */
+
+.brandorderdays-banner {
+    width: 100%;
+    padding: 0;
+    margin-bottom: 15px;
+}
+
+.brandorderdays-banner .alert {
+    margin-bottom: 0;
+    text-align: center;
+    font-weight: 500;
+}
+
+.brandorderdays-banner .material-icons {
+    vertical-align: middle;
+    margin-right: 5px;
 }
