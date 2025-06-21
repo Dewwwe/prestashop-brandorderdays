@@ -7,8 +7,8 @@
         {foreach from=$restricted_products item=product}
             <li>
                 <strong>{$product.name|escape:'htmlall':'UTF-8'}</strong>
-                {if isset($product.attributes_small)}
-                    <span class="product-attributes">({$product.attributes_small|escape:'htmlall':'UTF-8'})</span>
+                {if isset($product.cart_quantity)}
+                    <span class="product-attributes">({$product.cart_quantity|escape:'htmlall':'UTF-8'})</span>
                 {/if}
             </li>
         {/foreach}

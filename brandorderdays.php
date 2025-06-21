@@ -62,14 +62,22 @@ class Brandorderdays extends Module
         Configuration::updateValue('BRANDORDERDAYS_LIVE_MODE', false);
 
         return parent::install()
+            // register css/js front
             && $this->registerHook('displayHeader')
+            // show banner
             && $this->registerHook('displayTop')
             && $this->registerHook('displayWrapperTop')
+            // register css/js back
             && $this->registerHook('displayBackOfficeHeader')
+            // add configuration to product list pages
             && $this->registerHook('actionPresentProductListing')
+            // show message on product page
             && $this->registerHook('displayProductAdditionalInfo')
+            // show message on product list page 
             && $this->registerHook('displayProductListReviews')
+            // 
             && $this->registerHook('actionCartUpdateQuantityBefore')
+            // 
             && $this->registerHook('displayShoppingCart')
             && $this->registerHook('actionValidateOrder')
             && $this->saveModuleConfig($this->getDefaultConfig())
@@ -555,6 +563,8 @@ class Brandorderdays extends Module
                 'restricted_products' => $restricted_products,
                 'global_message' => $this->getModuleConfig()['global_message']
             ]);
+
+            dump($params);
 
             return $this->display(__FILE__, 'views/templates/hook/cart_restrictions.tpl');
         }
