@@ -77,8 +77,11 @@ class Brandorderdays extends Module
             && $this->registerHook('displayProductListReviews')
             // 
             && $this->registerHook('actionCartUpdateQuantityBefore')
-            // 
+            // show general message in cart
             && $this->registerHook('displayShoppingCart')
+            // message next to products in cart
+            && $this->registerHook('displayCartExtraProductActions')
+            // check before order completion
             && $this->registerHook('actionValidateOrder')
             && $this->saveModuleConfig($this->getDefaultConfig())
             // Install the quick access tab in the back office
@@ -573,6 +576,31 @@ class Brandorderdays extends Module
     }
 
     /**
+     * Display a message next to restricted products in the cart
+     */
+    public function hookDisplayCartExtraProductActions($params)
+    {
+        // If the module is not active, don't show any message
+        if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
+            return '';
+        }
+
+        // Get the product from the parameters
+        $product = $params['product'];
+        $id_product = $product['id_product'];
+
+        // Check if this product is restricted today
+        if ($this->isProductRestrictedToday($id_product)) {
+            $this->context->smarty->assign([
+                'restriction_message' => $this->getProductRestrictionMessage($id_product)
+            ]);
+            return $this->display(__FILE__, 'views/templates/hook/cart_product_restriction.tpl');
+        }
+
+        return '';
+    }
+
+    /**
      * Final validation before order completion
      */
     public function hookActionValidateOrder($params)
@@ -603,7 +631,8 @@ class Brandorderdays extends Module
         return $this->getBanner($params);
     }
 
-    protected function getBanner($params) {
+    protected function getBanner($params)
+    {
         // If the module is not active, don't show any banner
         if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
             return '';

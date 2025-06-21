@@ -116,3 +116,56 @@ article.product-miniature :has(.disable-cart) button {
     vertical-align: middle;
     margin-right: 5px;
 }
+
+/* Cart product messages */
+/* Styling for cart product restriction message */
+.cart-product-restriction-message {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    /* transform: translateY(-50%); */
+    width: 450px;
+    padding: 8px 10px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    color: #721c24;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    z-index: 10;
+    margin-right: 10px;
+    margin-top: 24px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.cart-product-restriction-message p {
+    width: fit-content;
+    max-width: 100%;
+    margin-bottom: 0;
+}
+
+
+/* Make sure the parent container has position relative */
+.product-line-grid,
+.cart-item {
+    position: relative !important;
+}
+
+/* Ensure the message is visible */
+.cart-product-restriction-message i {
+    font-size: 14px;
+    vertical-align: middle;
+    margin-right: 3px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+    .cart-product-restriction-message {
+        position: static;
+        transform: none;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        max-width: 100%;
+    }
+}
