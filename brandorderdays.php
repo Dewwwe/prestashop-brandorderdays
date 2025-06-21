@@ -442,6 +442,8 @@ class Brandorderdays extends Module
 
         foreach ($cart->getProducts() as $product) {
             if ($this->isProductRestrictedToday($product['id_product'])) {
+                // Add the restriction message to the product data
+                $product['restriction_message'] = $this->getProductRestrictionMessage($product['id_product']);
                 $restricted_products[] = $product;
             }
         }
@@ -564,16 +566,21 @@ class Brandorderdays extends Module
         if (!empty($restricted_products)) {
             $this->context->smarty->assign([
                 'restricted_products' => $restricted_products,
-                'global_message' => $this->getModuleConfig()['global_message']
+                'global_message' => $this->getModuleConfig()['global_message'],
+                'static_token' => Tools::getToken(false),
+                'urls' => [
+                    'pages' => [
+                        'cart' => $this->context->link->getPageLink('cart')
+                    ]
+                ]
             ]);
-
-            dump($params);
 
             return $this->display(__FILE__, 'views/templates/hook/cart_restrictions.tpl');
         }
 
         return '';
     }
+
 
     /**
      * Display a message next to restricted products in the cart
