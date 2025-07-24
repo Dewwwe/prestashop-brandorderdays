@@ -103,18 +103,13 @@ article.product-miniature :has(.disable-cart) button {
 .brandorderdays-banner {
     width: 100%;
     padding: 0;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
 .brandorderdays-banner .alert {
     margin-bottom: 0;
     text-align: center;
     font-weight: 500;
-}
-
-.brandorderdays-banner .material-icons {
-    vertical-align: middle;
-    margin-right: 5px;
 }
 
 /* Cart product messages */

@@ -65,7 +65,6 @@ class Brandorderdays extends Module
             // register css/js front
             && $this->registerHook('displayHeader')
             // show banner
-            && $this->registerHook('displayTop')
             && $this->registerHook('displayWrapperTop')
             // register css/js back
             && $this->registerHook('displayBackOfficeHeader')
@@ -629,10 +628,6 @@ class Brandorderdays extends Module
     /**
      * Display a banner when restricted products are on the page
      */
-    public function hookDisplayTop($params)
-    {
-        return $this->getBanner($params);
-    }
     public function hookDisplayWrapperTop($params)
     {
         return $this->getBanner($params);
