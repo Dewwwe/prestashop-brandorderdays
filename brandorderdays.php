@@ -82,6 +82,10 @@ class Brandorderdays extends Module
             && $this->registerHook('displayCartExtraProductActions')
             // check before order completion
             && $this->registerHook('actionValidateOrder')
+            // prevent access to checkout page with restricted products
+            && $this->registerHook('actionFrontControllerSetMedia')
+            // alternative hook for checkout prevention
+            && $this->registerHook('actionDispatcherBefore')
             && $this->saveModuleConfig($this->getDefaultConfig())
             // Install the quick access tab in the back office
             && $this->installTab();
@@ -249,8 +253,6 @@ class Brandorderdays extends Module
      */
     public function processConfigurationForm()
     {
-        $output = '';
-
         // Process the standard configuration values
         $form_values = $this->getConfigFormValues();
         foreach (array_keys($form_values) as $key) {
@@ -258,9 +260,7 @@ class Brandorderdays extends Module
         }
 
         // Process the brand restrictions configuration
-        $result = $this->processConfigForm();
-
-        return $result;
+        return $this->processConfigForm();
     }
 
     /**
@@ -359,6 +359,33 @@ class Brandorderdays extends Module
         if (Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
             $this->context->controller->addCSS($this->_path . '/views/css/front.css');
             $this->context->controller->addJS($this->_path . '/views/js/front.js');
+            
+            // Also check for checkout access here as this hook is more reliable
+            $this->checkAndPreventCheckoutAccessSafe();
+        }
+    }
+
+    /**
+     * Safer version of checkout access prevention for displayHeader hook
+     */
+    private function checkAndPreventCheckoutAccessSafe()
+    {
+        // Check if we have a controller with php_self
+        if (!isset($this->context->controller) || !isset($this->context->controller->php_self)) {
+            return;
+        }
+
+        $controller = $this->context->controller->php_self;
+        if ($controller === 'order') {
+            // Get current cart
+            $cart = $this->context->cart;
+            if ($cart && $cart->id) {
+                $restricted_products = $this->getRestrictedProductsInCart($cart);
+                
+                if (!empty($restricted_products)) {
+                    Tools::redirect($this->getCartUrl());
+                }
+            }
         }
     }
 
@@ -466,16 +493,15 @@ class Brandorderdays extends Module
         $id_product = $presentedProduct['id_product'];
 
         if ($this->isProductRestrictedToday($id_product)) {
-            // dump('presented product restricted: ');
-            // dump($presentedProduct);
-
             // Instead of modifying add_to_cart_url directly, we'll add our own flag
             $presentedProduct['restricted_day'] = true;
             $presentedProduct['restriction_message'] = $this->getProductRestrictionMessage($id_product);
             // Disable add to cart button by removing the url to up the product quantity
             $presentedProduct['up_quantity_url'] = false;
-
-            // dump($presentedProduct);
+            // $presentedProduct['flags'] += [
+            //     'type' => 'restricted',
+            //     'label' => $this->getProductRestrictionMessage($id_product)
+            // ];
         }
     }
 
@@ -567,11 +593,7 @@ class Brandorderdays extends Module
                 'restricted_products' => $restricted_products,
                 'global_message' => $this->getModuleConfig()['global_message'],
                 'static_token' => Tools::getToken(false),
-                'urls' => [
-                    'pages' => [
-                        'cart' => $this->context->link->getPageLink('cart')
-                    ]
-                ]
+                'cart_url' => $this->context->link->getPageLink('cart')
             ]);
 
             return $this->display(__FILE__, 'views/templates/hook/cart_restrictions.tpl');
@@ -626,14 +648,100 @@ class Brandorderdays extends Module
     }
 
     /**
-     * Display a banner when restricted products are on the page
+     * Check access to checkout page and redirect if restricted products are in cart
      */
-    public function hookDisplayWrapperTop($params)
+    public function hookActionFrontControllerSetMedia()
     {
-        return $this->getBanner($params);
+        $this->checkAndPreventCheckoutAccess();
     }
 
-    protected function getBanner($params)
+    /**
+     * Alternative hook for checkout prevention
+     */
+    public function hookActionDispatcherBefore()
+    {
+        $this->checkAndPreventCheckoutAccess();
+    }
+
+    /**
+     * Get cart URL with fallback
+     */
+    private function getCartUrl()
+    {
+        $cart_url = '/panier?action=show';
+        
+        if (isset($this->context->link)) {
+            try {
+                $generated_url = $this->context->link->getPageLink('cart', null, null, ['action' => 'show']);
+                if (!empty($generated_url) && $generated_url !== '/') {
+                    $cart_url = $generated_url;
+                }
+            } catch (Exception) {
+                // Use fallback
+            }
+        }
+        
+        return $cart_url;
+    }
+
+    /**
+     * Common method to check and prevent checkout access
+     */
+    private function checkAndPreventCheckoutAccess()
+    {
+        // If the module is not active, don't restrict anything
+        if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {
+            return;
+        }
+
+        // Check if context and controller are available
+        if (!isset($this->context) || !isset($this->context->controller)) {
+            return;
+        }
+
+        // Get controller name safely
+        $controller = null;
+        if (isset($this->context->controller->php_self)) {
+            $controller = $this->context->controller->php_self;
+        } else {
+            // Alternative method to detect controller
+            $controller_class = get_class($this->context->controller);
+            if (strpos($controller_class, 'OrderController') !== false) {
+                $controller = 'order';
+            } elseif (strpos($controller_class, 'CheckoutController') !== false) {
+                $controller = 'checkout';
+            }
+        }
+
+        // Also check URL for additional safety
+        $current_url = $_SERVER['REQUEST_URI'] ?? '';
+        $is_order_page = ($controller === 'order' || $controller === 'checkout' || 
+                         strpos($current_url, '/commande') !== false || 
+                         strpos($current_url, '/order') !== false ||
+                         strpos($current_url, '/checkout') !== false);
+
+        if ($is_order_page) {
+            // Get current cart
+            $cart = $this->context->cart ?? null;
+            if ($cart && $cart->id) {
+                $restricted_products = $this->getRestrictedProductsInCart($cart);
+                
+                if (!empty($restricted_products)) {
+                    Tools::redirect($this->getCartUrl());
+                }
+            }
+        }
+    }
+
+    /**
+     * Display a banner when restricted products are on the page
+     */
+    public function hookDisplayWrapperTop()
+    {
+        return $this->getBanner();
+    }
+
+    protected function getBanner()
     {
         // If the module is not active, don't show any banner
         if (!Configuration::get('BRANDORDERDAYS_LIVE_MODE', false)) {

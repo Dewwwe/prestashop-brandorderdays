@@ -80,7 +80,7 @@
 		</div>
 
 		<div class="form-group">
-			<label class="control-label col-lg-3">{l s='Global Message' d='Modules.Brandorderdays.Admin'}</label>
+			<label class="control-label col-lg-3">{l s='General Message' d='Modules.Brandorderdays.Admin'}</label>
 			<div class="col-lg-9">
 				<textarea name="global_message"
 						  class="form-control"
