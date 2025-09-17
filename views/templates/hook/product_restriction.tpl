@@ -29,11 +29,11 @@
 </div>
 
 <script type="text/javascript">
-    $(document).ready(function() {
+    document.addEventListener('DOMContentLoaded', function() {
         // Add restricted class to the add-to-cart section
-        $('.product-add-to-cart').addClass('restricted-day');
-        
-        // Disable the add-to-cart button
-        $('.product-add-to-cart .add-to-cart').addClass('disabled').attr('disabled', 'disabled');
+        var elements = document.querySelectorAll('.product-add-to-cart, .js-product-add-to-cart');
+        elements.forEach(function(element) {
+            element.classList.add('restricted-day');
+        });
     });
 </script>
