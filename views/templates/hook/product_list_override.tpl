@@ -6,5 +6,5 @@
     {$product.restriction_message}
 </div>
 
-<div class="disable-cart">
+<div class="disable-cart" style="display:none;">
 </div>
