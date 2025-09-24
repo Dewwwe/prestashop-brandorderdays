@@ -676,7 +676,7 @@ class Brandorderdays extends Module
                 if (!empty($generated_url) && $generated_url !== '/') {
                     $cart_url = $generated_url;
                 }
-            } catch (Exception) {
+            } catch (Exception $e) {
                 // Use fallback
             }
         }
