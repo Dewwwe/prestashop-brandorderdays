@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin-lpdy" source-language="fr-FR" target-language="fr-FR" datatype="plaintext">
+    <body>
+      <trans-unit id="d089b1d45a7f18c32246e4bdcec92575">
+        <source>Brand Ordering Restrictions</source>
+        <target>Restrictions des commandes par producteur</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8dd2f915acf4ec98006d11c9a4b0945b">
+        <source>Settings updated successfully.</source>
+        <target>Paramètres mis à jour avec succès.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ced1e2eb0e5b13bc27e9f16a189a58c0">
+        <source>Error occurred during settings update.</source>
+        <target>Une erreur s'est produite lors de la mise à jour des paramètres.</target>
+        <note>Line: </note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

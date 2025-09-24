@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin-lpdy" source-language="fr-FR" target-language="fr-FR" datatype="plaintext">
+    <body>
+      <trans-unit id="56f22a70ff9d796bf8260933b141ccb1">
+        <source>Brand Order Days</source>
+        <target>Jours de commande des fournisseurs</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="da67ea9b302b87ee83c5d479307011e5">
+        <source>Restrict ordering of products from specific brands on certain days of the week while maintaining clear communication with customers.</source>
+        <target>Limitez les commandes de produits de certains producteurs à certains jours de la semaine tout en maintenant une communication claire avec les clients.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d089b1d45a7f18c32246e4bdcec92575">
+        <source>Brand Ordering Restrictions</source>
+        <target>Restrictions des commandes par producteur</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6f8522e0610541f1ef215a22ffa66ff6">
+        <source>Monday</source>
+        <target>Lundi</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5792315f09a5d54fb7e3d066672b507f">
+        <source>Tuesday</source>
+        <target>Mardi</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="796c163589f295373e171842f37265d5">
+        <source>Wednesday</source>
+        <target>Mercredi</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="78ae6f0cd191d25147e252dc54768238">
+        <source>Thursday</source>
+        <target>Jeudi</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c33b138a163847cdb6caeeb7c9a126b4">
+        <source>Friday</source>
+        <target>Vendredi</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8b7051187b9191cdcdae6ed5a10e5adc">
+        <source>Saturday</source>
+        <target>Samedi</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9d1a0949c39e66a0cd65240bc0ac9177">
+        <source>Sunday</source>
+        <target>Dimanche</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8dd2f915acf4ec98006d11c9a4b0945b">
+        <source>Settings updated successfully.</source>
+        <target>Paramètres mis à jour avec succès.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ced1e2eb0e5b13bc27e9f16a189a58c0">
+        <source>Error occurred during settings update.</source>
+        <target>Une erreur s'est produite lors de la mise à jour des paramètres.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b59c9c31e2919b048eabb3ae7597df5b">
+        <source>Configure which days products from specific brands cannot be ordered.</source>
+        <target>Configurez les jours où les produits de certains producteurs ne peuvent pas être commandés.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="52f4393e1b52ba63e27310ca92ba098c">
+        <source>General Settings</source>
+        <target>Paramètres généraux</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e8b29de9f129834fd1593f05ace47703">
+        <source>Enable Module</source>
+        <target>Activer le module</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fb29285415c1866ecff6a2edd6707980">
+        <source>Enable or disable the module functionality</source>
+        <target>Activer ou désactiver la fonctionnalité du module</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="236df51bb0e6416236e255b528346fca">
+        <source>Timezone</source>
+        <target>Fuseau horaire</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2888e9a8b17babd3458f36040c5e1e91">
+        <source>Select the timezone to use for day calculations</source>
+        <target>Sélectionnez le fuseau horaire à utiliser pour les calculs de jour.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="706bb463c0d1b1bb3206075b738de370">
+        <source>General Message</source>
+        <target>Message général</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c9b1ec6bd46ce8d5042a226173308b03">
+        <source>Default message shown for restricted products</source>
+        <target>Message par défaut affiché pour les produits soumis à restriction</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1e3bf53925e2b0cd4a7c988463c577e6">
+        <source>Brand Restrictions</source>
+        <target>Restrictions des producteurs</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="aea4cad657c590b4cea860f20aacd178">
+        <source>Check the days when products from a specific brand CANNOT be ordered. When a day is checked, customers will not be able to add products from that brand to their cart on that day.</source>
+        <target>Cochez les jours où les produits d'un producteur spécifique NE PEUVENT PAS être commandés. Lorsqu'un jour est coché, les clients ne pourront pas ajouter les produits de ce producteur à leur panier ce jour-là.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="21592f5f3222a466f55f0c0f42e06030">
+        <source>Show only brands with configured restrictions</source>
+        <target>Afficher uniquement les producteurs avec des restrictions configurées</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1be6f9eb563f3bf85c78b4219bf09de9">
+        <source>Brand</source>
+        <target>Producteur</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f437aa2d5f37ecc4c8f81e60f9b091fb">
+        <source>Custom Message</source>
+        <target>Message personnalisé</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7e00b39a89e3aece0c4b79e770d17b4f">
+        <source>No brands found</source>
+        <target>Aucun producteur trouvé</target>
+        <note>Line: </note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

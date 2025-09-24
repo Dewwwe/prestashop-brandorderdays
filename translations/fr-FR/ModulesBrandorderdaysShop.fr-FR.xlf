@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin-lpdy" source-language="fr-FR" target-language="fr-FR" datatype="plaintext">
+    <body>
+      <trans-unit id="7cb12ababf342f16e151371c4273168d">
+        <source>Some products are only available on specific days of the week.</source>
+        <target>Certains produits ne sont disponibles que certains jours de la semaine.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="71a9df52f253b8aea76cbbea8d15cff5">
+        <source>This product cannot be ordered today.</source>
+        <target>Ce produit ne peut pas être commandé aujourd'hui.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="46eb3265c5b74ad12f82bc739f0d346c">
+        <source>Your cart contains products that cannot be ordered today.</source>
+        <target>Votre panier contient des produits qui ne peuvent pas être commandés aujourd'hui.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="57d44c8606fad7e8fe9d9ad5565ad608">
+        <source>Oops! Some products in your cart are not available anymore.</source>
+        <target>Oups ! Certains produits de votre panier ne sont plus disponibles.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ed4e0a0aae1c5f8eebeefb2d24e746bc">
+        <source>Remove all</source>
+        <target>Tout retirer</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d5ba93d5d002004caf85dc17bb3b5b79">
+        <source>Removing...</source>
+        <target>Suppression...</target>
+        <note>Line: </note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
