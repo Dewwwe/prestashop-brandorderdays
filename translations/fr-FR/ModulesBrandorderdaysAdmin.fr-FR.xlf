@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="56f22a70ff9d796bf8260933b141ccb1">
         <source>Brand Order Days</source>
-        <target>Jours de commande des fournisseurs</target>
+        <target>Jours de commande des producteurs</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="da67ea9b302b87ee83c5d479307011e5">
