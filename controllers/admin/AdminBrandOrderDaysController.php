@@ -37,7 +37,7 @@ class AdminBrandOrderDaysController extends ModuleAdminController
 
         parent::__construct();
 
-        $this->meta_title = $this->l('Brand Ordering Restrictions');
+        $this->meta_title = $this->module->getTranslator()->trans('Brand Ordering Restrictions', [], 'Modules.Brandorderdays.Admin');
     }
 
     public function initContent()
@@ -67,9 +67,9 @@ class AdminBrandOrderDaysController extends ModuleAdminController
 
             // Extract confirmation or error message from the result
             if (strpos($result, 'alert alert-success') !== false) {
-                $this->confirmations[] = $this->l('Settings updated successfully.');
+                $this->confirmations[] = $this->module->getTranslator()->trans('Settings updated successfully.', [], 'Modules.Brandorderdays.Admin');
             } elseif (strpos($result, 'alert alert-danger') !== false) {
-                $this->errors[] = $this->l('Error occurred during settings update.');
+                $this->errors[] = $this->module->getTranslator()->trans('Error occurred during settings update.', [], 'Modules.Brandorderdays.Admin');
             }
         }
 

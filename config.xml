@@ -2,7 +2,7 @@
 <module>
     <name>brandorderdays</name>
     <displayName><![CDATA[Brand Order Days]]></displayName>
-    <version><![CDATA[0.0.1]]></version>
+    <version><![CDATA[1.0.3]]></version>
     <description><![CDATA[Restrict ordering of products from specific brands on certain days of the week while maintaining clear communication with customers.]]></description>
     <author><![CDATA[dewwwe]]></author>
     <tab><![CDATA[front_office_features]]></tab>
